@@ -15,10 +15,10 @@ public class Test {
 //        File inputFile = new File(file_name + ".txt");
 //        File outputFile = new File(file_name + ".rar");
 //        sample.compress(inputFile, outputFile);
-        
+        String inputName2 = fileName + "2.txt";
 //      File inputFile = new File("gyh.rar");
 //      File outputFile = new File("hyq.txt");
-//      sample.extract(inputFile, outputFile);
+      sample.extract(outputName, inputName2);
     }
     
 
