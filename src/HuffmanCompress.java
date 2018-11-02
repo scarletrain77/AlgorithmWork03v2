@@ -12,6 +12,7 @@ import java.util.PriorityQueue;
 
 public class HuffmanCompress {
 	private PriorityQueue<HufTree> queue = null;
+	private HufTree[] huf_tree = null;
 	//临时存储字符频度的数组
 	private CharacterFreq[] tmp_nodes = new CharacterFreq[256];
 	private FileInputStream fis = null;
@@ -65,12 +66,33 @@ public class HuffmanCompress {
     	 return i;
     }
     
+    private void init_queue(int node_num){
+    	int i;
+        huf_tree = new HufTree[node_num];
+    	Compare cmp = new Compare();
+    	queue = new PriorityQueue<HufTree>(12,cmp);
+        for(i = 0; i < char_kinds; i++){
+            huf_tree[i] = new HufTree();
+            huf_tree[i].uch = tmp_nodes[i].uch;
+            huf_tree[i].weight = tmp_nodes[i].weight;
+            huf_tree[i].parent = 0;
+            huf_tree[i].index = i;
+            queue.add(huf_tree[i]);
+        }
+        tmp_nodes = null;
+        System.out.println(i);
+        for(; i < node_num; ++i){
+            huf_tree[i] = new HufTree();
+            huf_tree[i].parent = 0;
+        }
+    }
+    
     //压缩函数
     public void compress(String inputName, String outputName){
     	File inputFile = new File(inputName);
     	File outputFile = new File(outputName);
-    	Compare cmp = new Compare();
-        queue = new PriorityQueue<HufTree>(12,cmp);
+    	
+        //queue = new PriorityQueue<HufTree>(12,cmp);
 
         //映射字节及其对应的哈夫曼编码
         HashMap<Byte,String> map = new HashMap<Byte,String>();
@@ -81,8 +103,8 @@ public class HuffmanCompress {
         //FileOutputStream fos = null;
         ObjectOutputStream oos = null;
         //哈夫曼树节点个数
-        int node_num;
-        HufTree[] huf_tree = null;
+        //int node_num;
+        //HufTree[] huf_tree = null;
         String code_buf = null;
         //初始化数组
         character_freq();
@@ -123,22 +145,8 @@ public class HuffmanCompress {
                 oos.writeInt(tmp_nodes[0].weight);
             //字节多于一种的情况
             }else{
-                node_num = 2*char_kinds-1;//计算哈夫曼树所有节点个数
-                huf_tree = new HufTree[node_num];
-                for(i = 0; i < char_kinds; i++){
-                    huf_tree[i] = new HufTree();
-                    huf_tree[i].uch = tmp_nodes[i].uch;
-                    huf_tree[i].weight = tmp_nodes[i].weight;
-                    huf_tree[i].parent = 0;
-                    huf_tree[i].index = i;
-                    queue.add(huf_tree[i]);
-                }
-                tmp_nodes = null;
-                System.out.println(i);
-                for(; i < node_num; ++i){
-                    huf_tree[i] = new HufTree();
-                    huf_tree[i].parent = 0;
-                }
+            	int node_num = 2*char_kinds-1;//计算哈夫曼树所有节点个数
+                init_queue(node_num);               
                 //创建哈夫曼树
                 createTree(huf_tree, char_kinds, node_num,queue);
                 //生成哈夫曼编码
