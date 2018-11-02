@@ -1,6 +1,9 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Arrays;
@@ -9,11 +12,47 @@ import java.util.PriorityQueue;
 
 public class HuffmanCompress {
 	private PriorityQueue<HufTree> queue = null;
-
+	//临时存储字符频度的数组
+	private CharacterFreq[] tmp_nodes = new CharacterFreq[256];
+	private FileInputStream fis = null;
+	private FileOutputStream fos = null;
+	
+    public void character_freq(){
+    	//初始化字符频度数组
+         for(int i = 0; i < 256; ++i){
+            tmp_nodes[i] = new CharacterFreq();
+            tmp_nodes[i].weight = 0;
+            tmp_nodes[i].uch = (byte)i;
+        }
+    }
+    //读取文件
+    public void read_file(String fileName) {
+		File file = new File(fileName);
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+			String tempString = null;
+			while ((tempString = reader.readLine()) != null) { // 一次读入一行，当读入空时停止读取
+                ++tmp_nodes[char_temp].weight;
+                ++file_len;
+			}
+			reader.close();
+		} catch (IOException e) { // 异常处理
+			e.printStackTrace();
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e1) {
+				}
+			}
+		}
+	}
     //压缩函数
-    public void compress(File inputFile, File outputFile){
-
-        Compare cmp = new Compare();
+    public void compress(String inputName, String outputName){
+    	File inputFile = new File(inputName);
+    	File outputFile = new File(outputName);
+    	Compare cmp = new Compare();
         queue = new PriorityQueue<HufTree>(12,cmp);
 
         //映射字节及其对应的哈夫曼编码
@@ -21,23 +60,23 @@ public class HuffmanCompress {
         //文件中含有的字符的种类数
         int i,char_kinds = 0;
         int char_temp,file_len = 0;
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
+        //FileInputStream fis = null;
+        //FileOutputStream fos = null;
         ObjectOutputStream oos = null;
         //哈夫曼树节点个数
         int node_num;
         HufTree[] huf_tree = null;
         String code_buf = null;
-
-        //临时存储字符频度的数组
-        TmpNode[] tmp_nodes = new TmpNode[256];
-
-        for(i = 0; i < 256; ++i){
-            tmp_nodes[i] = new TmpNode();
-            tmp_nodes[i].weight = 0;
-            tmp_nodes[i].uch = (byte)i;
-        }
-
+        //初始化数组
+        character_freq();
+        //初始化数组源代码
+        //CharacterFreq[] tmp_nodes = new CharacterFreq[256];
+        //for(i = 0; i < 256; ++i){
+        //    tmp_nodes[i] = new TmpNode();
+        //    tmp_nodes[i].weight = 0;
+        //    tmp_nodes[i].uch = (byte)i;
+        //}
+       
         try {
             fis = new FileInputStream(inputFile);
             fos = new FileOutputStream(outputFile);
