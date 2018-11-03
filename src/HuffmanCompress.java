@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,16 +17,23 @@ public class HuffmanCompress {
 	private HufTree[] huf_tree = null;
 	//临时存储字符频度的数组
 	private CharacterFreq[] tmp_nodes = new CharacterFreq[256];
+	private int file_len = 0;
 	private FileInputStream fis = null;
 	private FileOutputStream fos = null;
 	private int char_kinds = 0;
 	
+	public HuffmanCompress(){//CharacterFreq[] tmp, int len){
+		//tmp_nodes = tmp;
+		//file_len = len;
+	}
+	
+	
     public void character_freq(){
     	//初始化字符频度数组
          for(int i = 0; i < 256; ++i){
-            tmp_nodes[i] = new CharacterFreq();
-            tmp_nodes[i].weight = 0;
-            tmp_nodes[i].uch = (byte)i;
+            tmp_nodes[i] = new CharacterFreq(i);
+            //tmp_nodes[i].weight = 0;
+            //tmp_nodes[i].uch = (byte)i;
         }
     }
     //读取文件
@@ -55,6 +64,87 @@ public class HuffmanCompress {
 			}
 		}
 		return file_len;
+	}
+    
+    //读取文件
+    public void write_file_kind1(String fileName) throws FileNotFoundException, IOException {
+		File file = new File(fileName);
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+		try {
+			oos.writeInt(char_kinds);
+			oos.writeByte(tmp_nodes[0].uch);
+			oos.writeInt(tmp_nodes[0].weight);
+			oos.close();
+		} catch (IOException e) { // 异常处理
+			e.printStackTrace();
+		} finally {
+			if (oos != null) {
+				try {
+					oos.close();
+				} catch (IOException e1) {
+				}
+			}
+		}
+	}
+    
+    public void write_file_kindN(String inputfileName, String outputfileName) throws FileNotFoundException, IOException {
+		File outputFile = new File(outputfileName);
+		File inputFile = new File(inputfileName);
+		ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(outputFile));
+		HashMap<Byte,String> map = new HashMap<Byte,String>();
+		FileInputStream fis = new FileInputStream(inputFile);
+		String code_buf = null;
+		int char_temp = 0;
+		try {
+			oos.writeInt(char_kinds);
+            for(int i = 0; i < char_kinds; ++i){
+                oos.writeByte(huf_tree[i].uch);
+                oos.writeInt(huf_tree[i].weight);
+                map.put(huf_tree[i].uch, huf_tree[i].code);
+            }
+            oos.writeInt(file_len);
+            
+            code_buf = "";
+            //将读出的字节对应的哈夫曼编码转化为二进制存入文件
+            while((char_temp = fis.read()) != -1){
+
+                code_buf += map.get((byte)char_temp);
+
+                while(code_buf.length() >= 8){
+                    char_temp = 0;
+                    for(int i = 0; i < 8; ++i){
+                        char_temp <<= 1;
+                        if(code_buf.charAt(i) == '1')
+                            char_temp |= 1;
+                    }
+                    
+                    code_buf = code_buf.substring(8);
+                    oos.writeByte((byte)char_temp);
+                }
+            }
+            //最后编码长度不够8位的时候，用0补齐
+            if(code_buf.length() > 0){
+                char_temp = 0;
+                for(int i = 0; i < code_buf.length(); ++i){
+                    char_temp <<= 1;
+                    if(code_buf.charAt(i) == '1')
+                        char_temp |= 1;
+                }
+                char_temp <<= (8-code_buf.length());
+                oos.writeByte((byte)char_temp);
+            }
+            fis.close();
+			oos.close();
+		} catch (IOException e) { // 异常处理
+			e.printStackTrace();
+		} finally {
+			if (oos != null) {
+				try {
+					oos.close();
+				} catch (IOException e1) {
+				}
+			}
+		}
 	}
     
     private int cal_char_kinds(){
@@ -105,7 +195,7 @@ public class HuffmanCompress {
         //哈夫曼树节点个数
         //int node_num;
         //HufTree[] huf_tree = null;
-        String code_buf = null;
+        //String code_buf = null;
         //初始化数组
         character_freq();
         //初始化数组源代码
@@ -120,7 +210,7 @@ public class HuffmanCompress {
             //fis = new FileInputStream(inputFile);
             //fos = new FileOutputStream(outputFile);
             oos = new ObjectOutputStream(new FileOutputStream(outputFile));
-            int file_len = read_file(inputName);
+            file_len = read_file(inputName);
             //统计字符频度，计算文件长度
             //while((char_temp = fis.read()) != -1){
             //    ++tmp_nodes[char_temp].weight;
@@ -140,9 +230,10 @@ public class HuffmanCompress {
             char_kinds = cal_char_kinds();
             //只有一种字节的情况
             if(char_kinds == 1){
-                oos.writeInt(char_kinds);
-                oos.writeByte(tmp_nodes[0].uch);
-                oos.writeInt(tmp_nodes[0].weight);
+                //oos.writeInt(char_kinds);
+                //oos.writeByte(tmp_nodes[0].uch);
+                //oos.writeInt(tmp_nodes[0].weight);
+            	write_file_kind1(outputName);
             //字节多于一种的情况
             }else{
             	int node_num = 2*char_kinds-1;//计算哈夫曼树所有节点个数
@@ -151,8 +242,9 @@ public class HuffmanCompress {
                 createTree(huf_tree, char_kinds, node_num,queue);
                 //生成哈夫曼编码
                 hufCode(huf_tree, char_kinds);
+                write_file_kindN(inputName, outputName);
                 //写入字节种类
-                oos.writeInt(char_kinds);
+                /*oos.writeInt(char_kinds);
                 for(i = 0; i < char_kinds; ++i){
                     oos.writeByte(huf_tree[i].uch);
                     oos.writeInt(huf_tree[i].weight);
@@ -173,8 +265,9 @@ public class HuffmanCompress {
                             if(code_buf.charAt(i) == '1')
                                 char_temp |= 1;
                         }
-                        oos.writeByte((byte)char_temp);
+                        
                         code_buf = code_buf.substring(8);
+                        oos.writeByte((byte)char_temp);
                     }
                 }
                 //最后编码长度不够8位的时候，用0补齐
@@ -188,9 +281,10 @@ public class HuffmanCompress {
                     char_temp <<= (8-code_buf.length());
                     oos.writeByte((byte)char_temp);
                 }
+                fis.close();*/
             }
-            oos.close();
-            fis.close();
+            //oos.close();
+           // 因为只有一个字幕的不需要close            fis.close();
         } catch (Exception e) { 
             e.printStackTrace();
         }
