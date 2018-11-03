@@ -14,7 +14,7 @@ public class Test {
 	        String outputName = fileName + ".rar";
 	        HuffmanCompress sample = new HuffmanCompress();
 	        sample.compress(inputName, outputName);
-	        //sample.init();
+	        sample.init();
 	        String inputName2 = fileName + "2.txt";
 	        sample.extract(outputName, inputName2);
     	}

@@ -7,8 +7,8 @@ class CharacterFreq implements Comparable<CharacterFreq>{
     	uch = (byte)i;
     }
     
-    public void init(){
-    	uch = 0;
+    public void init(int i){
+    	uch = (byte)i;
     	weight = 0;
     }
     

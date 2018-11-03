@@ -30,8 +30,7 @@ public class HuffmanCompress {
 	public void init(){
 		file_len = 0;
 		char_kinds = 0;
-		tmp_nodes = null;
-		queue = null;
+		queue.clear();
 		huf_tree = null;
 	}
 	
@@ -138,16 +137,17 @@ public class HuffmanCompress {
 		}
 	}
     
-    public void extract_write_file_kind1(ObjectInputStream ois2, FileOutputStream fos2) throws IOException{
+    public int extract_write_file_kind1(ObjectInputStream ois2, FileOutputStream fos2) throws IOException{
         byte code_temp = 0;
+        int filelen = 0;
     	try {
             code_temp = ois2.readByte();
-            file_len = ois2.readInt();
-            while((file_len--) != 0){
+            filelen = ois2.readInt();
+            while((filelen--) != 0){
                 fos2.write(code_temp);
             }
-            fos2.close();
-            ois2.close();
+            //fos2.close();
+            //ois2.close();
 		} catch (IOException e) { // 异常处理
 			e.printStackTrace();
 		} finally {
@@ -159,6 +159,7 @@ public class HuffmanCompress {
 				}
 			}
 		}
+    	return filelen;
     }
     
     public void extract_write_file_kindN(String inputfileName, String outputfileName) throws FileNotFoundException, IOException {
@@ -307,19 +308,19 @@ public class HuffmanCompress {
     public void extract(String inputName, String outputName){//File inputFile, File outputFile){
     	File inputFile = new File(inputName);
     	File outputFile = new File(outputName);
-    	Compare cmp = new Compare();
-        queue = new PriorityQueue<HufTree>(12,cmp);
+    	//Compare cmp = new Compare();
+        //queue = new PriorityQueue<HufTree>(12,new Compare());
 
         int i;
-        int file_len = 0;
+        //int file_len = 0;
         int writen_len = 0;
         FileInputStream fis = null;
         FileOutputStream fos = null;
         ObjectInputStream ois = null;
 
-        int char_kinds = 0;
+        //int char_kinds = 0;
         int node_num;
-        HufTree[] huf_tree = null;
+        //HufTree[] huf_tree = null;
         byte code_temp;
         int root;
         try{
@@ -331,15 +332,16 @@ public class HuffmanCompress {
 
             //字节只有一种的情况
             if(char_kinds == 1){
-                code_temp = ois.readByte();
+                /*code_temp = ois.readByte();
                 file_len = ois.readInt();
                 while((file_len--) != 0){
                     fos.write(code_temp);
-                }
+                }*/
+            	file_len = extract_write_file_kind1(ois, fos);
             //字节多于一种的情况
             }else{
                 node_num = 2 * char_kinds - 1; //计算哈夫曼树所有节点个数
-                huf_tree = new HufTree[node_num];
+                /*huf_tree = new HufTree[node_num];
                 for(i = 0; i < char_kinds; ++i){
                     huf_tree[i] = new HufTree();
                     huf_tree[i].uch = ois.readByte();
@@ -352,7 +354,8 @@ public class HuffmanCompress {
                 for(;i < node_num; ++i){
                     huf_tree[i] = new HufTree();
                     huf_tree[i].parent = 0;
-                }
+                }*/
+                init_queue(node_num, true, ois) ;
                 createTree(huf_tree, char_kinds, node_num,queue);
 
                 file_len = ois.readInt();
