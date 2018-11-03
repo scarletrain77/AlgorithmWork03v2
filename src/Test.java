@@ -7,23 +7,17 @@ public class Test {
 	public static CharacterFreq[] tmp_nodes = new CharacterFreq[256];
     public static void main(String[] args){
     	//产生一个1-6的随机数，随机读取文件
-    	int dataNumber = 2;// + (int)(Math.random()*6);
-	    String fileName = "data/input_assign03_0" + Integer.toString(dataNumber);
-    	//read_file("data/input_assign02_0" + Integer.toString(dataNumber) + ".txt");
-	   
-       
-        String inputName = fileName + ".txt";
-        String outputName = fileName + ".rar";
-        //int file_len = read_file(inputName);
-        HuffmanCompress sample = new HuffmanCompress();//tmp_nodes, file_len);
-        sample.compress(inputName, outputName);
-//        File inputFile = new File(file_name + ".txt");
-//        File outputFile = new File(file_name + ".rar");
-//        sample.compress(inputFile, outputFile);
-        String inputName2 = fileName + "2.txt";
-//      File inputFile = new File("gyh.rar");
-//      File outputFile = new File("hyq.txt");
-      sample.extract(outputName, inputName2);
+    	int dataNumber = 1;// + (int)(Math.random()*6);
+    	for (dataNumber = 1; dataNumber <= 2; dataNumber++){
+		    String fileName = "data/input_assign03_0" + Integer.toString(dataNumber);     
+	        String inputName = fileName + ".txt";
+	        String outputName = fileName + ".rar";
+	        HuffmanCompress sample = new HuffmanCompress();
+	        sample.compress(inputName, outputName);
+	        //sample.init();
+	        String inputName2 = fileName + "2.txt";
+	        sample.extract(outputName, inputName2);
+    	}
     }
     
 
